@@ -1,9 +1,0 @@
-import BirthdayCard from './components/BirthdayCard'
-
-export default function Home() {
-  return (
-    <main>
-      <BirthdayCard />
-    </main>
-  )
-}
