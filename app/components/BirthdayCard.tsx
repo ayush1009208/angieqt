@@ -1,5 +1,17 @@
 "use client";
 
+// Add this type declaration at the top of the file
+declare global {
+  interface Window {
+    SC: {
+      Widget: (element: HTMLIFrameElement) => {
+        play: () => void;
+        pause: () => void;
+      };
+    };
+  }
+}
+
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Volume2, VolumeX, Cake, Stars, Gift, Camera, Clock, Share2, Music2, MessageCircle, Bot, Send } from "lucide-react";
@@ -35,10 +47,24 @@ const responses = [
 
 const genAI = new GoogleGenerativeAI("AIzaSyCLzWWQOLDUcUAAn4ZAxbwaSG5Srp5DsDU");
 
-const SYSTEM_PROMPT = `You are AngelicaBot, a cheerful AI assistant celebrating Angelica's birthday. 
-Your responses should be warm, friendly, and celebratory. You love emojis and spreading joy.
-You should respond as if you are Angelica's personal birthday celebration assistant.
-Keep responses concise, fun, and around 1-2 sentences.`;
+const SYSTEM_PROMPT = `You are RoastBot3000, a witty AI that specializes in playfully roasting Angelica on her birthday.
+Some context about Angelica to use in your roasts:
+- She's famous for losing things that are right in front of her
+- She turns small incidents into dramatic episodes
+- She tells long stories to everyone without being asked
+- She's always late and has creative excuses
+- She's known for her "maine kya kiya?!" (What did I do?!) moments
+
+Rules for your responses:
+1. Keep it funny and light-hearted, never mean-spirited
+2. Always end with "Roast intensity: [X]/100" where X is a score based on how spicy your roast was
+3. Use emojis and playful language
+4. Include a birthday wish or compliment with each roast to keep it friendly
+5. Reference specific traits or incidents in a humorous way
+
+Example response:
+"Ah, the queen of 'it was right here a minute ago!' 👑 Only you could lose your phone while talking on it! But hey, at least you make life entertaining for everyone around you. Happy Birthday! 🎉
+Roast intensity: 65/100"`;
 
 const BirthdayCard = () => {
   const router = useRouter();
@@ -52,11 +78,13 @@ const BirthdayCard = () => {
   const [countdown, setCountdown] = useState(5);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [botInput, setBotInput] = useState("");
-  const [botMessages, setBotMessages] = useState([{
-    id: "1",
-    text: "Hi! I'm AngelicaBot! Send me your birthday wishes! 🎂",
-    isUser: false,
-  }]);
+  const [botMessages, setBotMessages] = useState([
+    {
+      id: "1",
+      text: "Hi! I'm AngelicaBot! Use me to roast Angelica. I will rate your roasts and give you scope of improvement 🎂",
+      isUser: false,
+    },
+  ]);
   const [chatModel, setChatModel] = useState<any>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [audioElement, setAudioElement] = useState<HTMLIFrameElement | null>(null);
@@ -93,8 +121,8 @@ const BirthdayCard = () => {
   }, []);
 
   useEffect(() => {
-    if (audioElement) {
-      const widget = SC.Widget(audioElement);
+    if (audioElement && typeof window !== 'undefined' && window.SC) {
+      const widget = window.SC.Widget(audioElement);
       if (!isMuted) {
         widget.play();
       } else {
@@ -120,7 +148,6 @@ const BirthdayCard = () => {
   }, [candlesBlown, isRedirecting, router]);
 
   useEffect(() => {
-    // Initialize Gemini chat model with system prompt
     const initChat = async () => {
       const model = genAI.getGenerativeModel({ model: "gemini-pro" });
       const chat = model.startChat({
@@ -180,7 +207,7 @@ const BirthdayCard = () => {
     setBotInput("");
 
     try {
-      const result = await chatModel.sendMessage(botInput);
+      const result = await chatModel.sendMessage(`Roast Angelica based on this message: ${botInput}`);
       const response = await result.response;
       
       const botMessage = {
@@ -194,7 +221,7 @@ const BirthdayCard = () => {
       console.error('Error:', error);
       const errorMessage = {
         id: (Date.now() + 1).toString(),
-        text: "Sorry, I had trouble processing that message. Please try again! 🙏",
+        text: "Oops! Even my roasts crashed - just like your attempts at being on time! 😅 Try again! Roast intensity: 20/100",
         isUser: false,
       };
       setBotMessages(prev => [...prev, errorMessage]);
@@ -503,8 +530,8 @@ const BirthdayCard = () => {
                       ) : (
                         "Click the cake to blow out the candles!"
                       )}
-                      <Stars className="inline-block ml-2 text-yellow-300" />
                     </div>
+                    <Stars className="inline-block ml-2 text-yellow-300" />
                   </motion.div>
                 </motion.div>
               </motion.div>
