@@ -1,5 +1,9 @@
-import BirthdayCard from './components/BirthdayCard';
+import BirthdayCard from './components/BirthdayCard'
 
 export default function Home() {
-  return <BirthdayCard />;
+  return (
+    <main>
+      <BirthdayCard />
+    </main>
+  )
 }
