@@ -15,7 +15,6 @@ const birthdayMusic = new Howl({
   loop: true,
 });
 
-
 const messages = [
   "You light up every room you enter! 💫",
   "Your smile is contagious! 😊",
@@ -37,6 +36,11 @@ const BirthdayCard = () => {
   const [countdown, setCountdown] = useState(5);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const confettiRef = useRef<any>(null);
+  
+  // Fix: Use useCallback for the ref function
+  const getInstance = useCallback((instance: any) => {
+    confettiRef.current = instance;
+  }, []);
 
   const triggerConfetti = () => {
     const colors = ['#FFD700', '#FF69B4', '#9370DB', '#00CED1'];
@@ -121,8 +125,9 @@ const BirthdayCard = () => {
 
   return (
     <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-rose-100 via-purple-200 to-indigo-200 p-4 sm:p-8">
+      {/* Fix: Use the getInstance callback instead of refConfetti prop */}
       <ReactCanvasConfetti
-        refConfetti={(instance: any) => (confettiRef.current = instance)}
+        ref={getInstance}
         style={{
           position: 'fixed',
           pointerEvents: 'none',
