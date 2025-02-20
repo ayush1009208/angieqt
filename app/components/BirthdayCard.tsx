@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Howl } from "howler";
 import { Volume2, VolumeX, Cake, Stars, Gift, Camera, Clock, Share2, Music2, MessageCircle } from "lucide-react";
@@ -36,14 +36,23 @@ const BirthdayCard = () => {
   const [currentTab, setCurrentTab] = useState('card');
   const [countdown, setCountdown] = useState(5);
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const confettiRef = useRef<any>(null);
 
-  const getInstance = useCallback((instance: any) => {
-    if (instance) {
-      setTimeout(() => {
-        triggerConfetti(instance);
-      }, 100);
+  const triggerConfetti = () => {
+    const colors = ['#FFD700', '#FF69B4', '#9370DB', '#00CED1'];
+    if (confettiRef.current) {
+      confettiRef.current({
+        particleCount: 150,
+        spread: 100,
+        origin: { y: 0.6 },
+        colors: colors,
+        ticks: 200,
+        gravity: 0.8,
+        scalar: 1.2,
+        shapes: ['star', 'circle']
+      });
     }
-  }, []);
+  };
 
   useEffect(() => {
     if (!isMuted) {
@@ -70,20 +79,6 @@ const BirthdayCard = () => {
     }
   }, [candlesBlown, isRedirecting, router]);
 
-  const triggerConfetti = (instance: any) => {
-    const colors = ['#FFD700', '#FF69B4', '#9370DB', '#00CED1'];
-    instance({
-      particleCount: 150,
-      spread: 100,
-      origin: { y: 0.6 },
-      colors: colors,
-      ticks: 200,
-      gravity: 0.8,
-      scalar: 1.2,
-      shapes: ['star', 'circle']
-    });
-  };
-
   const popBalloon = (index: number) => {
     const newBalloons = [...balloons];
     newBalloons[index] = true;
@@ -109,7 +104,7 @@ const BirthdayCard = () => {
     if (!candlesBlown) {
       setCandlesBlown(true);
       setIsRedirecting(true);
-      triggerConfetti(getInstance);
+      triggerConfetti();
     }
   };
 
@@ -127,7 +122,7 @@ const BirthdayCard = () => {
   return (
     <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-rose-100 via-purple-200 to-indigo-200 p-4 sm:p-8">
       <ReactCanvasConfetti
-        refConfetti={getInstance}
+        refConfetti={(instance: any) => (confettiRef.current = instance)}
         style={{
           position: 'fixed',
           pointerEvents: 'none',
@@ -282,7 +277,7 @@ const BirthdayCard = () => {
               <Button
                 onClick={() => setShowCake(!showCake)}
                 className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white text-lg px-8 py-6 rounded-full shadow-lg"
-              >
+              ></Button>
                 <Cake className="mr-2 h-6 w-6" /> Make a Birthday Wish!
               </Button>
             </div>
