@@ -2,19 +2,18 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Howl } from "howler";
-import { Volume2, VolumeX, Cake, Stars, Gift, Camera, Clock, Share2, Music2, MessageCircle } from "lucide-react";
+import { Volume2, VolumeX, Cake, Stars, Gift, Camera, Clock, Share2, Music2, MessageCircle, Bot, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input"; // Fix: separate import for Input
 import confetti from 'canvas-confetti';
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from 'next/navigation';
 import angelicamain from '../../public/angelicamain.png';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const birthdayMusic = new Howl({
-  src: ["../../lib/sanamterikasam.mp3"],  
-  loop: true,
-});
+// Replace the Howl configuration with SoundCloud iframe
+const SOUNDCLOUD_URL = "https://soundcloud.com/happy-birthday-official/sets/happy-birthday-47?utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing";
 
 const messages = [
   "You light up every room you enter! 💫",
@@ -24,6 +23,22 @@ const messages = [
   "You make the world better! 🌈",
   "You're truly one of a kind! 💝"
 ];
+
+const responses = [
+  "Thank you for your sweet message! 💖",
+  "You're so kind! I appreciate your wishes! 🥰",
+  "Your message made my day brighter! ✨",
+  "Thanks for being part of my special day! 🎉",
+  "Your wishes mean a lot to me! 💝",
+  "I'm so happy to receive your message! 🌟",
+];
+
+const genAI = new GoogleGenerativeAI("AIzaSyCLzWWQOLDUcUAAn4ZAxbwaSG5Srp5DsDU");
+
+const SYSTEM_PROMPT = `You are AngelicaBot, a cheerful AI assistant celebrating Angelica's birthday. 
+Your responses should be warm, friendly, and celebratory. You love emojis and spreading joy.
+You should respond as if you are Angelica's personal birthday celebration assistant.
+Keep responses concise, fun, and around 1-2 sentences.`;
 
 const BirthdayCard = () => {
   const router = useRouter();
@@ -36,7 +51,15 @@ const BirthdayCard = () => {
   const [currentTab, setCurrentTab] = useState('card');
   const [countdown, setCountdown] = useState(5);
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [botInput, setBotInput] = useState("");
+  const [botMessages, setBotMessages] = useState([{
+    id: "1",
+    text: "Hi! I'm AngelicaBot! Send me your birthday wishes! 🎂",
+    isUser: false,
+  }]);
+  const [chatModel, setChatModel] = useState<any>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [audioElement, setAudioElement] = useState<HTMLIFrameElement | null>(null);
 
   const triggerConfetti = useCallback(() => {
     confetti({
@@ -57,13 +80,28 @@ const BirthdayCard = () => {
   }, [triggerConfetti]);
 
   useEffect(() => {
-    if (!isMuted) {
-      birthdayMusic.play();
-    } else {
-      birthdayMusic.pause();
+    // Initialize SoundCloud iframe
+    const iframe = document.createElement('iframe');
+    iframe.src = `https://w.soundcloud.com/player/?url=${SOUNDCLOUD_URL}&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false`;
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+    setAudioElement(iframe);
+
+    return () => {
+      iframe.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (audioElement) {
+      const widget = SC.Widget(audioElement);
+      if (!isMuted) {
+        widget.play();
+      } else {
+        widget.pause();
+      }
     }
-    return () => birthdayMusic.stop();
-  }, [isMuted]);
+  }, [isMuted, audioElement]);
 
   useEffect(() => {
     if (candlesBlown && isRedirecting) {
@@ -80,6 +118,24 @@ const BirthdayCard = () => {
       return () => clearInterval(timer);
     }
   }, [candlesBlown, isRedirecting, router]);
+
+  useEffect(() => {
+    // Initialize Gemini chat model with system prompt
+    const initChat = async () => {
+      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+      const chat = model.startChat({
+        history: [
+          {
+            role: "user",
+            parts: SYSTEM_PROMPT,
+          },
+        ],
+      });
+      setChatModel(chat);
+    };
+
+    initChat();
+  }, []);
 
   const popBalloon = (index: number) => {
     const newBalloons = [...balloons];
@@ -107,6 +163,41 @@ const BirthdayCard = () => {
       setCandlesBlown(true);
       setIsRedirecting(true);
       triggerConfetti();
+    }
+  };
+
+  const handleBotSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!botInput.trim() || !chatModel) return;
+
+    const userMessage = {
+      id: Date.now().toString(),
+      text: botInput,
+      isUser: true,
+    };
+
+    setBotMessages(prev => [...prev, userMessage]);
+    setBotInput("");
+
+    try {
+      const result = await chatModel.sendMessage(botInput);
+      const response = await result.response;
+      
+      const botMessage = {
+        id: (Date.now() + 1).toString(),
+        text: response.text(),
+        isUser: false,
+      };
+
+      setBotMessages(prev => [...prev, botMessage]);
+    } catch (error) {
+      console.error('Error:', error);
+      const errorMessage = {
+        id: (Date.now() + 1).toString(),
+        text: "Sorry, I had trouble processing that message. Please try again! 🙏",
+        isUser: false,
+      };
+      setBotMessages(prev => [...prev, errorMessage]);
     }
   };
 
@@ -141,7 +232,7 @@ const BirthdayCard = () => {
           <div className="flex gap-2">
             <TabButton icon={Cake} label="Card" tab="card" />
             <TabButton icon={Camera} label="Memories" tab="memories" />
-            <TabButton icon={Music2} label="Playlist" tab="playlist" />
+            <TabButton icon={Bot} label="Chat" tab="chat" />
             <Link href="/wishes" className="inline-flex">
               <Button variant="ghost" className="flex items-center gap-2">
                 <MessageCircle size={20} />
@@ -318,36 +409,48 @@ const BirthdayCard = () => {
           </div>
         )}
 
-        {currentTab === 'playlist' && (
+        {currentTab === 'chat' && (
           <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-8 shadow-xl">
-            <h2 className="text-3xl font-bold text-purple-900 mb-6">Birthday Playlist 🎵</h2>
-            <div className="space-y-4">
-              {[
-                "Happy - Pharrell Williams",
-                "Birthday - Katy Perry",
-                "Can't Stop the Feeling! - Justin Timberlake",
-                "Celebration - Kool & The Gang",
-                "Good as Hell - Lizzo",
-                "Walking on Sunshine - Katrina & The Waves"
-              ].map((song, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="flex items-center gap-4 p-4 rounded-lg hover:bg-white/50 transition-colors"
+            <h2 className="text-3xl font-bold text-purple-800 mb-6">Chat with AngelicaBot 🤖</h2>
+            <div className="h-[400px] flex flex-col">
+              <div className="flex-1 overflow-y-auto space-y-4 p-4">
+                <AnimatePresence>
+                  {botMessages.map((message) => (
+                    <motion.div
+                      key={message.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div
+                        className={`max-w-[80%] p-3 rounded-2xl ${
+                          message.isUser
+                            ? 'bg-purple-600 text-white rounded-br-none'
+                            : 'bg-gray-100 text-gray-800 rounded-bl-none'
+                        }`}
+                      >
+                        {message.text}
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
+
+              <form onSubmit={handleBotSubmit} className="flex gap-2 p-2 border-t border-purple-100">
+                <Input
+                  value={botInput}
+                  onChange={(e) => setBotInput(e.target.value)}
+                  placeholder="Type your message..."
+                  className="flex-1"
+                />
+                <Button 
+                  type="submit"
+                  className="bg-gradient-to-r from-purple-600 to-pink-500 hover:opacity-90"
                 >
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white">
-                    {index + 1}
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-purple-900">{song}</p>
-                  </div>
-                  <Button variant="ghost" size="icon">
-                    <Music2 size={20} />
-                  </Button>
-                </motion.div>
-              ))}
+                  <Send className="h-4 w-4" />
+                </Button>
+              </form>
             </div>
           </div>
         )}
