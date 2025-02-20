@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Howl } from "howler";
 import { Volume2, VolumeX, Cake, Stars, Gift, Camera, Clock, Share2, Music2, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import ReactCanvasConfetti from "react-canvas-confetti";
+import confetti from 'canvas-confetti';
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from 'next/navigation';
@@ -35,28 +35,25 @@ const BirthdayCard = () => {
   const [currentTab, setCurrentTab] = useState('card');
   const [countdown, setCountdown] = useState(5);
   const [isRedirecting, setIsRedirecting] = useState(false);
-  const confettiRef = useRef<any>(null);
-  
-  // Fix: Use useCallback for the ref function
-  const getInstance = useCallback((instance: any) => {
-    confettiRef.current = instance;
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  const triggerConfetti = useCallback(() => {
+    confetti({
+      particleCount: 150,
+      spread: 100,
+      origin: { y: 0.6 },
+      colors: ['#FFD700', '#FF69B4', '#9370DB', '#00CED1'],
+      ticks: 200,
+      gravity: 0.8,
+      scalar: 1.2,
+      shapes: ['star', 'circle']
+    });
   }, []);
 
-  const triggerConfetti = () => {
-    const colors = ['#FFD700', '#FF69B4', '#9370DB', '#00CED1'];
-    if (confettiRef.current) {
-      confettiRef.current({
-        particleCount: 150,
-        spread: 100,
-        origin: { y: 0.6 },
-        colors: colors,
-        ticks: 200,
-        gravity: 0.8,
-        scalar: 1.2,
-        shapes: ['star', 'circle']
-      });
-    }
-  };
+  useEffect(() => {
+    // Initial confetti burst when component mounts
+    triggerConfetti();
+  }, [triggerConfetti]);
 
   useEffect(() => {
     if (!isMuted) {
@@ -125,9 +122,8 @@ const BirthdayCard = () => {
 
   return (
     <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-rose-100 via-purple-200 to-indigo-200 p-4 sm:p-8">
-      {/* Fix: Use the getInstance callback instead of refConfetti prop */}
-      <ReactCanvasConfetti
-        ref={getInstance}
+      <canvas 
+        ref={canvasRef}
         style={{
           position: 'fixed',
           pointerEvents: 'none',
