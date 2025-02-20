@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { FloatingHearts } from "./FloatingHearts";
+import { Sparkles } from "./Sparkles";
 
 const PREDEFINED_IMAGES = [
   {
@@ -169,19 +170,7 @@ export default function WishesPage() {
                     ))}
                   </div>
                 </div>
-                <div>
-                  <Label htmlFor="imageUrl">Or paste custom image URL (optional)</Label>
-                  <Input
-                    id="imageUrl"
-                    type="url"
-                    value={newWish.imageUrl}
-                    onChange={(e) => {
-                      setNewWish(prev => ({ ...prev, imageUrl: e.target.value }));
-                      setSelectedImageId(null);
-                    }}
-                    placeholder="Paste your image URL here"
-                  />
-                </div>
+             
                 <Button 
                   type="submit" 
                   className="w-full bg-gradient-to-r from-purple-600 to-pink-500 hover:opacity-90"
@@ -194,7 +183,7 @@ export default function WishesPage() {
           </Dialog>
         </div>
 
-        <div className="grid gap-6">
+        <div className="grid gap-3"> {/* Reduced gap */}
           <AnimatePresence>
             {wishes.map((wish, index) => (
               <motion.div
@@ -203,42 +192,76 @@ export default function WishesPage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-white/90 backdrop-blur-sm rounded-lg p-6 shadow-xl hover:shadow-2xl transition-shadow border border-purple-100"
+                className="group bg-white/80 backdrop-blur-md rounded-xl p-3 hover:bg-white/90 
+                  shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)]
+                  border border-purple-100/50 relative overflow-hidden
+                  transition-all duration-300 ease-in-out"
+                whileHover={{ y: -2 }}
               >
-                <div className="flex flex-col">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="font-semibold text-lg text-purple-800">{wish.name}</h3>
-                      <p className="mt-2 text-gray-600 leading-relaxed">{wish.message}</p>
-                    </div>
-                    <motion.div
-                      whileHover={{ scale: 1.2 }}
-                      whileTap={{ scale: 0.9 }}
-                    >
-                      <Heart className="text-pink-500 hover:text-pink-600 transition-colors cursor-pointer" size={24} />
-                    </motion.div>
-                  </div>
+                <div className="flex gap-3"> {/* Reduced gap */}
                   {wish.imageUrl && (
                     <motion.div 
-                      className="mt-4 relative w-full"
+                      className="relative w-1/5 flex-shrink-0" // Reduced width
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: 0.2 }}
                     >
-                      <div className="aspect-[16/9] relative">
+                      <div className="aspect-[3/4] relative rounded-lg overflow-hidden ring-2 ring-purple-100/50 group-hover:ring-purple-200">
                         <Image
                           src={wish.imageUrl}
                           alt={`Image from ${wish.name}`}
                           fill
-                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                          className="rounded-lg object-contain"
-                          onError={(e: any) => {
-                            e.target.style.display = 'none';
-                          }}
+                          sizes="(max-width: 768px) 20vw, 15vw"
+                          className="object-cover transition-transform duration-300 group-hover:scale-105"
                         />
                       </div>
                     </motion.div>
                   )}
+                  
+                  <div className="flex-1 overflow-hidden"> {/* Changed from min-w-0 to overflow-hidden */}
+                    <div className="flex justify-between items-start gap-2">
+                      <div className="flex-1 overflow-hidden"> {/* Added flex-1 and overflow-hidden */}
+                        <h3 className="font-semibold text-2xl text-purple-800 mb-2 overflow-ellipsis overflow-hidden">
+                          {wish.name}
+                        </h3>
+                        <p className="text-lg text-gray-600 leading-relaxed overflow-hidden">
+                          {wish.message}
+                        </p>
+                      </div>
+                      <motion.div
+                        whileHover={{ scale: 1.2 }}
+                        whileTap={{ scale: 0.9 }}
+                        className="flex-shrink-0"
+                      >
+                        <Heart 
+                          className="text-pink-500/80 hover:text-pink-500 transition-colors cursor-pointer 
+                            filter drop-shadow-[0_2px_8px_rgba(219,39,119,0.3)]" 
+                          size={24}
+                        />
+                      </motion.div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Decorative bottom animation */}
+                <div className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-purple-500/20" />
+                <motion.div
+                  className="absolute bottom-0 left-0 w-1/3 h-[2px] bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400"
+                  animate={{
+                    x: ["0%", "200%"],
+                  }}
+                  transition={{
+                    duration: 2,
+                    ease: "easeInOut",
+                    repeat: Infinity,
+                    repeatType: "reverse"
+                  }}
+                />
+                <Sparkles />
+                
+                {/* Decorative corner */}
+                <div className="absolute top-0 right-0 w-16 h-16 overflow-hidden pointer-events-none">
+                  <div className="absolute top-[-50%] right-[-50%] w-16 h-16 bg-gradient-to-bl from-purple-100/40 rotate-45" />
                 </div>
               </motion.div>
             ))}
