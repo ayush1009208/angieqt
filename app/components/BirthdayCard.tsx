@@ -277,7 +277,7 @@ const BirthdayCard = () => {
               <Button
                 onClick={() => setShowCake(!showCake)}
                 className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white text-lg px-8 py-6 rounded-full shadow-lg"
-              ></Button>
+              >
                 <Cake className="mr-2 h-6 w-6" /> Make a Birthday Wish!
               </Button>
             </div>
