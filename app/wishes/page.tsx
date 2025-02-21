@@ -14,6 +14,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { FloatingHearts } from "./FloatingHearts";
 import { Sparkles } from "./Sparkles";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { Switch } from "@/components/ui/switch";
 
 const PREDEFINED_IMAGES = [
   {
@@ -38,6 +40,10 @@ const PREDEFINED_IMAGES = [
   }
 ];
 
+const genAI = new GoogleGenerativeAI("AIzaSyCLzWWQOLDUcUAAn4ZAxbwaSG5Srp5DsDU");
+
+const ENHANCE_PROMPT = `You are a poetic birthday wish enhancer. Make the given birthday wish more beautiful and heartfelt while keeping the core sentiment intact. Add some poetic elements and emojis, but keep it natural and personal. Keep the enhanced version within 2-3 sentences.`;
+
 interface Wish {
   id: string;
   name: string;
@@ -52,6 +58,8 @@ export default function WishesPage() {
   const [isOpen, setIsOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [selectedImageId, setSelectedImageId] = useState<number | null>(null);
+  const [enhancing, setEnhancing] = useState(false);
+  const [useAI, setUseAI] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "wishes"), (snapshot) => {
@@ -65,6 +73,18 @@ export default function WishesPage() {
     return () => unsubscribe();
   }, []);
 
+  const enhanceMessage = async (message: string) => {
+    try {
+      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+      const result = await model.generateContent(`${ENHANCE_PROMPT}\nOriginal wish: ${message}`);
+      const enhancedMessage = await result.response.text();
+      return enhancedMessage;
+    } catch (error) {
+      console.error('Error enhancing message:', error);
+      return message;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newWish.name || !newWish.message) {
@@ -76,9 +96,15 @@ export default function WishesPage() {
     try {
       const selectedImage = PREDEFINED_IMAGES.find(img => img.id === selectedImageId);
       
+      let finalMessage = newWish.message;
+      if (useAI) {
+        setEnhancing(true);
+        finalMessage = await enhanceMessage(newWish.message);
+      }
+      
       const wishData = {
         name: newWish.name,
-        message: newWish.message,
+        message: finalMessage,
         imageUrl: selectedImage?.url || newWish.imageUrl,
         timestamp: serverTimestamp(),
       };
@@ -92,6 +118,7 @@ export default function WishesPage() {
       alert("Failed to add wish. Please try again.");
     } finally {
       setSubmitting(false);
+      setEnhancing(false);
     }
   };
 
@@ -170,13 +197,29 @@ export default function WishesPage() {
                     ))}
                   </div>
                 </div>
-             
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>Enhance with AI</Label>
+                    <p className="text-sm text-gray-500">
+                      Make your wish more poetic ✨
+                    </p>
+                  </div>
+                  <Switch
+                    checked={useAI}
+                    onCheckedChange={setUseAI}
+                    className="data-[state=checked]:bg-purple-500"
+                  />
+                </div>
                 <Button 
                   type="submit" 
                   className="w-full bg-gradient-to-r from-purple-600 to-pink-500 hover:opacity-90"
                   disabled={submitting}
                 >
-                  {submitting ? 'Sending...' : 'Send Wish'}
+                  {submitting ? (
+                    enhancing ? 'Enhancing with AI...' : 'Sending...'
+                  ) : (
+                    useAI ? 'Send Enhanced Wish ✨' : 'Send Wish'
+                  )}
                 </Button>
               </form>
             </DialogContent>
