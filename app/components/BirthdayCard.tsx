@@ -121,6 +121,7 @@ const BirthdayCard = () => {
   }, []);
 
   useEffect(() => {
+
     if (audioElement && typeof window !== 'undefined' && window.SC) {
       const widget = window.SC.Widget(audioElement);
       if (!isMuted) {
@@ -255,15 +256,15 @@ const BirthdayCard = () => {
       />
       
       <div className="max-w-5xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex gap-2">
+        <div className="flex flex-wrap justify-between items-center mb-8">
+          <div className="flex flex-wrap gap-2 mb-2 sm:mb-0">
             <TabButton icon={Cake} label="Card" tab="card" />
             <TabButton icon={Camera} label="Memories" tab="memories" />
             <TabButton icon={Bot} label="Chat" tab="chat" />
             <Link href="/wishes" className="inline-flex">
               <Button variant="ghost" className="flex items-center gap-2">
                 <MessageCircle size={20} />
-                Birthday Wishes
+                <span className="hidden sm:inline">Birthday Wishes</span>
               </Button>
             </Link>
           </div>
@@ -295,7 +296,7 @@ const BirthdayCard = () => {
               transition={{ duration: 1.5, type: "spring" }}
               className="text-center mb-16"
             >
-              <h1 className="text-6xl sm:text-8xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 via-pink-500 to-rose-500">
+              <h1 className="text-4xl sm:text-6xl md:text-8xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 via-pink-500 to-rose-500">
                 Happy Birthday
               </h1>
               <motion.div
@@ -318,7 +319,7 @@ const BirthdayCard = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
               <motion.div
-                className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl"
+                className="relative aspect-[4/3] md:aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl"
                 whileHover={{ scale: 1.02 }}
                 transition={{ duration: 0.3 }}
               >
@@ -334,12 +335,12 @@ const BirthdayCard = () => {
 
               <div className="flex flex-col justify-center gap-4">
                 <motion.div
-                  className="bg-white/80 backdrop-blur-lg rounded-2xl p-8 shadow-xl"
+                  className="bg-white/80 backdrop-blur-lg rounded-2xl p-4 sm:p-8 shadow-xl"
                   initial={{ opacity: 0, x: 50 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.8 }}
                 >
-                    <p className="text-xl leading-relaxed text-purple-900">
+                    <p className="text-base sm:text-xl leading-relaxed text-purple-900">
                     Priye Angelica,<br /><br />
                     Janmadin mubarak ho! Tumhare bina duniya shayad zyada shaant aur sorted hoti, lekin fir itna drama, adventure aur "maine kya kiya?!" moments kahan se aate? Tumhari khaas skills—cheezon ko samne rakhkar kho dena, chhoti si baat ko maha-episode bana dena, aur sabko bina maange apni kahani sunnana—waaqai bejod hain.<br /><br />
                     Is saal tumhe kam naye musibat wale ideas, thodi aur samajhdari, aur shayad timely replies karne ki taqat mile. Tum duniya ki sari khushiyan, hasi-mazaak, aur kabhi-kabhi ek reality check deserve karti ho.<br /><br />
@@ -361,7 +362,7 @@ const BirthdayCard = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 mb-12">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 md:gap-4 mb-12">
               {balloons.map((isPopped, index) => (
                 <motion.div
                   key={index}
@@ -405,9 +406,9 @@ const BirthdayCard = () => {
         )}
 
         {currentTab === 'memories' && (
-          <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-8 shadow-xl">
+          <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-4 sm:p-8 shadow-xl">
             <h2 className="text-3xl font-bold text-purple-900 mb-6">Birthday Memories 📸</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {[
                 "https://i.ibb.co/fdnFxgqC/Screenshot-2025-02-20-230629.png",
                 "https://i.ibb.co/JW1Lq2Tc/IMG-20250220-WA0068.jpg",
@@ -437,9 +438,9 @@ const BirthdayCard = () => {
         )}
 
         {currentTab === 'chat' && (
-          <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-8 shadow-xl">
-            <h2 className="text-3xl font-bold text-purple-800 mb-6">Chat with AngelicaBot 🤖</h2>
-            <div className="h-[400px] flex flex-col">
+          <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-4 sm:p-8 shadow-xl">
+            <h2 className="text-2xl sm:text-3xl font-bold text-purple-800 mb-4 sm:mb-6">Chat with AngelicaBot 🤖</h2>
+            <div className="h-[300px] sm:h-[400px] flex flex-col">
               <div className="flex-1 overflow-y-auto space-y-4 p-4">
                 <AnimatePresence>
                   {botMessages.map((message) => (
@@ -492,7 +493,7 @@ const BirthdayCard = () => {
               onClick={() => setShowCake(false)}
             >
               <motion.div
-                className="text-center bg-white/20 backdrop-blur-md rounded-3xl p-12"
+                className="text-center bg-white/20 backdrop-blur-md rounded-3xl p-6 md:p-12 mx-4 max-w-[90%] md:max-w-[600px]"
                 initial={{ scale: 0, rotate: -180 }}
                 animate={{ scale: 1, rotate: 0 }}
                 exit={{ scale: 0, rotate: 180 }}
@@ -512,7 +513,7 @@ const BirthdayCard = () => {
                     repeatType: "reverse"
                   }}
                 >
-                  <div className="text-[150px]">{candlesBlown ? "🎂" : "🎈🎂🎈"}</div>
+                  <div className="text-[100px] sm:text-[150px]">{candlesBlown ? "🎂" : "🎈🎂🎈"}</div>
                   <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
@@ -547,7 +548,7 @@ const BirthdayCard = () => {
               onClick={() => setShowGift(false)}
             >
               <motion.div
-                className="text-center bg-white/20 backdrop-blur-md rounded-3xl p-12"
+                className="text-center bg-white/20 backdrop-blur-md rounded-3xl p-6 md:p-12 mx-4 max-w-[90%] md:max-w-[600px]"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 exit={{ scale: 0 }}
@@ -562,7 +563,7 @@ const BirthdayCard = () => {
                     rotate: [0, 10, -10, 0]
                   } : {}}
                 >
-                  <div className="text-[150px]">{giftUnwrapped ? "🎁" : "🎁"}</div>
+                  <div className="text-[100px] sm:text-[150px]">{giftUnwrapped ? "🎁" : "🎁"}</div>
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
