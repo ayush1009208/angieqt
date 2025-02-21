@@ -42,7 +42,7 @@ const PREDEFINED_IMAGES = [
 
 const genAI = new GoogleGenerativeAI("AIzaSyCLzWWQOLDUcUAAn4ZAxbwaSG5Srp5DsDU");
 
-const ENHANCE_PROMPT = `You are a poetic birthday wish enhancer. Make the given birthday wish more beautiful and heartfelt while keeping the core sentiment intact. Add some poetic elements and emojis, but keep it natural and personal. Keep the enhanced version within 2-3 sentences.`;
+const ENHANCE_PROMPT = `You are a poetic birthday wish enhancer. Make the given birthday wish more beautiful and heartfelt while keeping the core sentiment intact. Add some poetic elements and emojis, but keep it natural and personal.elongate the wish to 4-5 lines.`;
 
 interface Wish {
   id: string;
